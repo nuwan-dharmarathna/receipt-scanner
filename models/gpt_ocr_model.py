@@ -1,6 +1,5 @@
 import openai
 import os
-import json
 import base64
 from fastapi import HTTPException
 
@@ -27,7 +26,7 @@ def extract_transaction_details(image_bytes):
                                         "- **Category**: Choose from ['Groceries', 'Restaurants', 'Electricity', 'Water', "
                                         "'Internet', 'Fuel', 'Public Transport', 'Taxi', 'Rent', 'Salary', 'Business Income', "
                                         "'Loan', 'Gym', 'Insurance', 'Refunds', 'Other Income'].\n"
-                                        "- **Amount**: The total amount in the receipt.\n"
+                                        "- **Amount**: The total amount in the receipt.Remove all alphabet charactors and provide only the numerical value in float datatype.\n"
                                         "- **Date**: The transaction date in YYYY-MM-DD format.\n\n"
                                         "If any field is missing or unclear, provide your best estimation."
             },

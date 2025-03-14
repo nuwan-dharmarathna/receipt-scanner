@@ -4,62 +4,74 @@ import os
 from fastapi import HTTPException
 from config import OPENAI_API_KEY
 
-openai.api_key = OPENAI_API_KEY
+# Initialize OpenAI client
+client = openai.OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
-async def analyze_receipt(ocr_data):
-    print(f"OCR Result: {ocr_data}")
-    
-    prompt = f"""
-    Analyze the following receipt and categorize it as either 'income' or 'expense'. 
-    Extract the following details accurately:
-    - **Transaction Type**: 'income' or 'expense'
-    - **Description**: A short summary of the transaction.
-    - **Category**: Choose from ['Groceries', 'Restaurants', 'Electricity', 'Water', 'Internet', 'Fuel', 'Public Transport', 'Taxi', 'Rent', 'Salary', 'Business Income', 'Loan', 'Gym', 'Insurance', 'Refunds', 'Other Income'].
-    - **Amount**: The total amount in the receipt.
-    - **Date**: The transaction date in YYYY-MM-DD format.
-
-    If any field is missing or unclear, provide your best estimation. Do not return unknown fields.
-
-    Receipt:
-    ```
-    {ocr_data}
-    ```
-
-    Return the result as a JSON object with keys: 'transactionType', 'description', 'category', 'amount', and 'date'.
-    Ensure the response is only a JSON object and does not include any additional text.
+def extract_transaction_details(text):
+    """
+    Extracts transaction details from a text using OpenAI's GPT-4.
     """
 
+    # Call OpenAI API
+    response = client.chat.completions.create(
+    model="gpt-4-turbo",
+    messages=[
+        {"role": "system", "content": "You are an AI assistant that extracts structured transaction details from the given text."},
+            {"role": "user", "content": "Analyze the following text and categorize it as either 'income' or 'expense'. "
+                                        "Extract the following details accurately:\n"
+                                        "- **Transaction Type**: 'income' or 'expense'\n"
+                                        "- **Description**: A short summary of the transaction.\n"
+                                        "- **Category**: Choose from ['Groceries', 'Restaurants', 'Electricity', 'Water', "
+                                        "'Internet', 'Fuel', 'Public Transport', 'Taxi', 'Rent', 'Salary', 'Business Income', "
+                                        "'Loan', 'Gym', 'Insurance', 'Refunds', 'Other Income'].\n"
+                                        "- **Amount**: The total amount mentioned in the text.\n"
+                                        "If any field is missing or unclear, provide your best estimation."
+            },
+        {
+            "role": "user",
+            "content": "Analyze the following text and categorize it as either 'income' or 'expense'. Extract the following details accurately:\n\n"
+                       "- **Transaction Type**: 'income' or 'expense'\n"
+                       "- **Description**: A short summary of the transaction.\n"
+                       "- **Category**: ['Groceries', 'Restaurants', 'Electricity', 'Water', 'Internet', 'Fuel', 'Public Transport', 'Taxi', 'Rent', 'Salary', 'Business Income', 'Loan', 'Gym', 'Insurance', 'Refunds', 'Other Income']\n"
+                       "- **Amount**: The total amount.Remove all alphabet charactors and provide only the numerical value in float datatype.\n"
+                       "If any field is missing, provide your best estimation."
+        },
+        {
+            "role": "assistant",
+            "content": f"Here's the text extracted from the receipt: {text}"
+        }
+    ],
+    max_tokens=300
+    )
+    
+    print(f"Raw GPT Response: {response}")  # Log the raw response
+    
+    # Check if the response is empty
+    if not response:
+        raise HTTPException(status_code=500, detail="GPT response is empty")
+
+    # Extract the content from the response
+    content = response.choices[0].message.content
+    print(f"Extracted Content: {content}")  # Log the extracted content
+
+    # Parse the content to extract JSON-like structure
+    # Assuming the content is in a format that can be easily parsed
+    # You might need to adjust this part depending on the exact format of the content
     try:
-        # Call OpenAI API
-        response = openai.chat.completions.create(
-            model="gpt-4",
-            messages=[
-                {"role": "system", "content": "You are an assistant for financial transaction analysis."},
-                {"role": "user", "content": prompt}
-            ]
-        )
+        # Example parsing logic (adjust as needed)
+        transaction_type = content.split("**Transaction Type**:")[1].split("\n")[0].strip().strip("'")
+        description = content.split("**Description**:")[1].split("\n")[0].strip()
+        category = content.split("**Category**:")[1].split("\n")[0].strip().strip("'")
+        amount = content.split("**Amount**:")[1].split("\n")[0].strip().replace(",", "")
 
-        # Extract the response content
-        gpt_output = response.choices[0].message.content
-        print(f"Raw GPT Response: {gpt_output}")  # Log the raw response
+        result = {
+            "transactionType": transaction_type,
+            "description": description,
+            "category": category,
+            "amount": float(amount)
+        }
 
-        # Check if the response is empty
-        if not gpt_output:
-            raise HTTPException(status_code=500, detail="GPT response is empty")
+        return result
 
-        # Extract JSON part from the response
-        start_index = gpt_output.find('{')
-        end_index = gpt_output.rfind('}') + 1
-
-        if start_index == -1 or end_index == 0:
-            raise HTTPException(status_code=500, detail="No JSON object found in GPT response")
-
-        json_str = gpt_output[start_index:end_index]
-        print(f"Extracted JSON: {json_str}")  # Log the extracted JSON
-
-        # Parse the JSON
-        return json.loads(json_str)
-        
     except Exception as e:
-        print(f"Error: {str(e)}")  # Log the error
-        raise HTTPException(status_code=500, detail=f"Failed to process GPT response: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Failed to parse GPT response: {str(e)}")
