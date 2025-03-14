@@ -23,7 +23,7 @@ def extract_transaction_details(text):
                                         "- **Description**: A short summary of the transaction.\n"
                                         "- **Category**: Choose from ['Groceries', 'Restaurants', 'Electricity', 'Water', "
                                         "'Internet', 'Fuel', 'Public Transport', 'Taxi', 'Rent', 'Salary', 'Business Income', "
-                                        "'Loan', 'Gym', 'Insurance', 'Refunds', 'Other Income'].\n"
+                                        "'Loan', 'Gym', 'Insurance', 'Refunds', 'Other Income', 'Other Expense'].Provide only the category value from  without reason to why it choose.\n"
                                         "- **Amount**: The total amount mentioned in the text.\n"
                                         "If any field is missing or unclear, provide your best estimation."
             },
