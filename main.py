@@ -5,6 +5,9 @@ from routes.receipt_routes import router as receipt_router
 from routes.whisper_routes import router as whisper_router
 from routes.text_routes import router as text_router
 
+import warnings
+warnings.filterwarnings("ignore", category=FutureWarning)
+
 app = FastAPI()
 
 @app.get("/")
