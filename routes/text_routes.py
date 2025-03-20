@@ -1,5 +1,5 @@
 from fastapi import APIRouter, HTTPException, Request
-from models.text_translation_model import translator
+from models.text_translation_model import trans_client
 from models.gpt_model import extract_transaction_details
 import os
 import datetime
@@ -17,9 +17,9 @@ async def text_translation(request: Request):
         raise HTTPException(status_code=400, detail="Both 'text' and 'language' fields are required.")
     
     # Perform translation
-    result = await translator.translate(text, src=language, dest='en')
-    print(f"Translated Text: {result.text}")
-    response = extract_transaction_details(result)
+    result = trans_client.translate(text, target_language="en")
+    print(f"Translated Text: {result['translatedText']}")
+    response = extract_transaction_details(result['translatedText'])
     print(f"Extracted Transaction Details: {response}")
     
     

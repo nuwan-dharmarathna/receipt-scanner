@@ -2,8 +2,8 @@ from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 
 from routes.receipt_routes import router as receipt_router
-from routes.whisper_routes import router as whisper_router
 from routes.text_routes import router as text_router
+from routes.gcp_speech_routes import router as gcp_speech_router
 
 import warnings
 warnings.filterwarnings("ignore", category=FutureWarning)
@@ -16,8 +16,8 @@ def root():
 
 # routes
 app.include_router(receipt_router, prefix="/api/v1/receipt")
-app.include_router(whisper_router, prefix="/api/v1/voice")
 app.include_router(text_router, prefix="/api/v1/text")
+app.include_router(gcp_speech_router, prefix="/api/v1/speech")
 
 
 if __name__ == "__main__":
