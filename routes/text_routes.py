@@ -28,11 +28,5 @@ async def text_translation(request: Request):
         "amount": response.get("amount", 0),
         "description": response["description"],
         "category": response["category"],
-        "date": datetime.datetime.now().strftime("%Y-%m-%d"),
-        "recieptUrl": None,
-        "isRecurring": False,
-        "recurringInterval": None,
-        "nextRecurringDate": None,
-        "lastProcessed": None,
-        "transactionStatus": "completed"
+        "date": datetime.datetime.now().strftime("%Y-%m-%d")
     }

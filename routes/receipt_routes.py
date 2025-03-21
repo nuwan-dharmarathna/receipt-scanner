@@ -24,36 +24,8 @@ async def extract_receipt(file: UploadFile = File(...)):
         "description": result["description"],
         "category": result["category"],
         "date": result.get("date", None),
-        "recieptUrl": None,
-        "isRecurring": False,
-        "recurringInterval": None,
-        "nextRecurringDate": None,
-        "lastProcessed": None,
-        "transactionStatus": "completed"
     }
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
     
-    
-# @router.post("/process_receipt")
-# async def process_receipt(file: UploadFile = File(...)):
-#     image = Image.open(file.file).convert("RGB")
-#     ocr_result = ocr_model.extract_text(image)
-#     gpt_response = await analyze_receipt(ocr_result)
-    
-#     print(f"GPT Result in Route: {gpt_response}")
-
-#     return {
-#         "transactionType": gpt_response["transactionType"],
-#         "amount": gpt_response.get("amount", 0),
-#         "description": gpt_response["description"],
-#         "category": gpt_response["category"],
-#         "date": gpt_response.get("date", None),
-#         "recieptUrl": None,
-#         "isRecurring": False,
-#         "recurringInterval": None,
-#         "nextRecurringDate": None,
-#         "lastProcessed": None,
-#         "transactionStatus": "completed"
-#     }

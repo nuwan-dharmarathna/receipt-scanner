@@ -5,12 +5,10 @@ from pydub import AudioSegment
 import datetime
 
 from models.gpt_model import extract_transaction_details
+from models.gcp_voice_trans_model import speech_client
 from models.text_translation_model import trans_client
 
 router = APIRouter()
-
-# Load Google Cloud Speech Client
-client = speech.SpeechClient.from_service_account_file("gcp_key.json")
 
 @router.post("/voice-translate/")
 async def translate_audio(
@@ -41,7 +39,7 @@ async def translate_audio(
             language_code=language_code,  # Dynamic language code
         )
 
-        response = client.recognize(config=config, audio=recognition_audio)
+        response = speech_client.recognize(config=config, audio=recognition_audio)
         
         gpt_response = {}
         transcript = None
@@ -55,7 +53,6 @@ async def translate_audio(
             if language_code == "si-LK":
                 # Perform translation
                 result = trans_client.translate(transcript, target_language="en")
-                # result = await translator.translate(transcript, src='si', dest='en')
                 print(f"Translated Text: {result['translatedText']}")
                 transcript = result["translatedText"]
                 print(f"Translated Transcript: {transcript}")
@@ -70,22 +67,8 @@ async def translate_audio(
             "amount": gpt_response.get("amount", 0),
             "description": gpt_response["description"],
             "category": gpt_response["category"],
-            "date": datetime.datetime.now().strftime("%Y-%m-%d"),
-            "recieptUrl": None,
-            "isRecurring": False,
-            "recurringInterval": None,
-            "nextRecurringDate": None,
-            "lastProcessed": None,
-            "transactionStatus": "completed"
+            "date": datetime.datetime.now().strftime("%Y-%m-%d")
         }
-
-        # Extract transcriptions
-        # transcriptions = [
-        #     {"transcript": result.alternatives[0].transcript, "confidence": result.alternatives[0].confidence}
-        #     for result in response.results
-        # ]
-
-        # return {"language": language_code, "transcriptions": transcriptions}
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error processing audio: {str(e)}")
