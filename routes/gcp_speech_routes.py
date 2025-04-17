@@ -15,6 +15,7 @@ async def translate_audio(
     file: UploadFile = File(...), 
     language_code: str = Form("en-US")  # Default to English if not provided
 ):
+    print(f"Received file: {file.filename}")
     try:
         # Read uploaded file
         audio_bytes = await file.read()
@@ -50,12 +51,14 @@ async def translate_audio(
         print(f"Transcript: {transcript}")
         
         if transcript:
-            if language_code == "si-LK":
+            if language_code == "si":
                 # Perform translation
+                language_code = "si-LK"
                 result = trans_client.translate(transcript, target_language="en")
                 print(f"Translated Text: {result['translatedText']}")
                 transcript = result["translatedText"]
                 print(f"Translated Transcript: {transcript}")
+            language_code = "en-US"
             gpt_response = extract_transaction_details(transcript)
         else:
             raise HTTPException(status_code=500, detail="No transcript found")

@@ -1,5 +1,6 @@
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
+from fastapi.middleware.cors import CORSMiddleware
 
 from routes.receipt_routes import router as receipt_router
 from routes.text_routes import router as text_router
@@ -9,6 +10,19 @@ import warnings
 warnings.filterwarnings("ignore", category=FutureWarning)
 
 app = FastAPI()
+
+# Allows CORS from frontend
+origins = [
+    "http://localhost:5173",
+]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 @app.get("/")
 def root():
